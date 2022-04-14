@@ -236,3 +236,25 @@ END;
 /
 EXECUTE grant_select('ADMIN_DATING_APP','DATA_OPERATOR');
 /
+DECLARE
+count_s number;
+begin
+select count(*) into count_s from user_sequences where sequence_name =upper('user_id_seq'); 
+IF (count_s = 0) then
+EXECUTE IMMEDIATE 'CREATE SEQUENCE user_id_seq
+ START WITH     1
+ INCREMENT BY   1
+ MAXVALUE  9999999999
+ NOCACHE
+ NOCYCLE';
+ELSE 
+EXECUTE IMMEDIATE 'DROP SEQUENCE user_id_seq';
+EXECUTE IMMEDIATE 'CREATE SEQUENCE user_id_seq
+ START WITH     1
+ INCREMENT BY   1
+ MAXVALUE  9999999999
+ NOCACHE
+ NOCYCLE';
+END IF;
+END;
+/
