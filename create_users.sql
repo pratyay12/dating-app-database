@@ -27,10 +27,15 @@ begin
   select count(*) into userexist from dba_users where username='DATA_OPERATOR';
   if (userexist = 0) then
     execute immediate 'create user DATA_OPERATOR identified by NxXPY6boUurG9';
+    execute immediate 'GRANT create session TO DATA_OPERATOR';
+    execute immediate 'grant create view, create procedure, create sequence to DATA_OPERATOR';
 
   else
     execute immediate 'drop user data_operator';
     execute immediate 'create user DATA_OPERATOR identified by NxXPY6boUurG9';
+    execute immediate 'GRANT create session TO DATA_OPERATOR';
+    execute immediate 'grant create view, create procedure, create sequence to DATA_OPERATOR';
+
   end if;
   
   
@@ -38,3 +43,4 @@ end;
 /
 execute create_users();
 /
+
