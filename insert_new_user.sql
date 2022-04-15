@@ -1,7 +1,7 @@
 set SERVEROUTPUT on;
 
 create or replace procedure insert_new_user(USERID number,
-    GENDER_ID number,
+    GENDER VARCHAR2,
     LAST_NAME varchar2,
     FIRST_NAME varchar2,
     PHONENUMBER number,
@@ -22,6 +22,7 @@ create or replace procedure insert_new_user(USERID number,
 is
 
 user_id_unique number;
+GENDERID number;
 user_id_uniqueEx exception;
 phone_unique number;
 phone_uniqueEx exception;
@@ -39,7 +40,7 @@ select count(*) into phone_unique from user_detail_u where PHONE_NUMBER = PHONEN
 select count(*) into email_unique from user_detail_u where email = email_;
 select count(*) into ig_link_unique from user_detail_u where INSTAGRAM_LINK = INSTAGRAMLINK;
 select count(*) into passport_unique from user_detail_u where PASSPORT_NUMBER = PASSPORTNUMBER;
-
+GENDERID := gender_id_name(gender);
 
 
 if
@@ -82,7 +83,7 @@ insert into user_detail_u(USER_ID,
     PASSPORT_NUMBER,
     MEMBERSHIP_TYPE) 
 values(USERID,
-    GENDER_ID,
+    GENDERID,
     LAST_NAME,
     FIRST_NAME,
     PHONENUMBER,
@@ -133,7 +134,7 @@ CREATE SEQUENCE USER_ID_SEQ
 
 
     
-exec insert_new_user(USER_ID_SEQ.nextval, 0000000005, 'Patel', 'Raj', 8572505548, 'abcd@gmail.com',CURRENT_TIMESTAMP, '12-DEC-98', 'BIO', 'HOBBY', 6.0, 'Boston', 'MA', 'IG_LINK4.COM', 'PASSWORD1', CURRENT_TIMESTAMP, 'M9523456','TYPE1');
+exec insert_new_user(USER_ID_SEQ.nextval, 'male', 'Patel', 'Raj', 8572505548, 'abcd@gmail.com',CURRENT_TIMESTAMP, '12-DEC-98', 'BIO', 'HOBBY', 6.0, 'Boston', 'MA', 'IG_LINK4.COM', 'PASSWORD1', CURRENT_TIMESTAMP, 'M9523456','TYPE1');
 
 
 DROP SEQUENCE USER_ID_SEQ;
