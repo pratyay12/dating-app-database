@@ -1,15 +1,5 @@
 set SERVEROUTPUT on;
 
--- Function to get the Gender ID --
-CREATE OR REPLACE FUNCTION gender_id_name(gender_i IN varchar2)
-RETURN number
-IS
-gender_id_value number;
-BEGIN
-select gender_id into gender_id_value from GENDER_U  where gender = gender_i;
-RETURN gender_id_value;
-END;
-/
 
 create or replace procedure insert_new_user(USERID number,
     GENDER VARCHAR2,
@@ -135,17 +125,6 @@ end;
 /
 
 
-CREATE SEQUENCE USER_ID_SEQ
-    INCREMENT BY 1
-    START WITH 1000000000
-    MINVALUE 1000000000
-    MAXVALUE 9999999999
-    CACHE 20;
 
 
 
-    
-exec insert_new_user(USER_ID_SEQ.nextval, 'male', 'Patel', 'Raj', 8572505548, 'abcd@gmail.com',CURRENT_TIMESTAMP, '12-DEC-98', 'BIO', 'HOBBY', 6.0, 'Boston', 'MA', 'IG_LINK4.COM', 'PASSWORD1', CURRENT_TIMESTAMP, 'M9523456','TYPE1');
-
-
-DROP SEQUENCE USER_ID_SEQ;

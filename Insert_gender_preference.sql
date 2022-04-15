@@ -1,6 +1,5 @@
 set SERVEROUTPUT on;
 
-
 create or replace procedure insert_gender_preference(email_value IN varchar2, password_value IN varchar2, preference IN varchar2) 
 
 is
@@ -40,5 +39,3 @@ raise_application_error (-20010,'USER ID and gender id combination Should be Uni
 end;
 /
 
-    
-exec insert_gender_preference('abcd@gmail.com','PASSWORD1','female');
