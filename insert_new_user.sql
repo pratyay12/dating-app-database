@@ -1,5 +1,16 @@
 set SERVEROUTPUT on;
 
+-- Function to get the Gender ID --
+CREATE OR REPLACE FUNCTION gender_id_name(gender_i IN varchar2)
+RETURN number
+IS
+gender_id_value number;
+BEGIN
+select gender_id into gender_id_value from GENDER_U  where gender = gender_i;
+RETURN gender_id_value;
+END;
+/
+
 create or replace procedure insert_new_user(USERID number,
     GENDER VARCHAR2,
     LAST_NAME varchar2,
