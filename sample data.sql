@@ -39,3 +39,27 @@ exec insert_rating('abcde@gmail.com','PASSWORD1','abcd@gmail.com',3);
 --insert data into BLOCK_R
 
 exec insert_block('abcde@gmail.com','PASSWORD1','abcd@gmail.com');
+
+--insert data into user_photo_u
+
+CREATE SEQUENCE PHOTO_ID_SEQ
+    INCREMENT BY 1
+    START WITH 1000000002
+    MINVALUE 1000000000
+    MAXVALUE 9999999999
+    CACHE 20;
+    
+exec insert_photo('abcd@gmail.com','PASSWORD1',PHOTO_ID_SEQ.nextval,CURRENT_TIMESTAMP,'photolink')
+
+
+drop sequence PHOTO_ID_SEQ;
+
+--insert data into relationship_type_u
+
+insert into relationship_type_u values(25,'serious');
+insert into relationship_type_u values(23,'casual');
+
+
+--insert into interested_in_relationship_u
+
+exec insert_relationship_type('abcd@gmail.com','PASSWORD1','casual')
