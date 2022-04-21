@@ -146,3 +146,5 @@ exec insert_relationship('Committed');
 exec insert_relationship('NSA'); 
 exec insert_relationship('Not Sure'); 
 /
+COMMIT;
+/
