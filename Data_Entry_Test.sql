@@ -274,7 +274,28 @@ EXEC ADMIN_DATING_APP.INSERT_CONVERSATION( 'kiley.caldarera@aol.com' , 'ZyKDmjR5
 EXEC ADMIN_DATING_APP.INSERT_CONVERSATION( 'gruta@cox.net' , 'mroads','alisha@slusarski.com' , ' Interesting, they also have gills. Did you know that jellyfish are immortal? ')
 EXEC ADMIN_DATING_APP.INSERT_CONVERSATION( 'calbares@gmail.com' , 'vbl666ufhl','allene_iturbide@cox.net' , 'Yes. Fish is the important resources of human world wide for the commercial and subsistence fish hunts the fish in the wild fisheries.')
 EXEC ADMIN_DATING_APP.INSERT_CONVERSATION( 'mattie@aol.com' , '9533207','chanel.caudy@caudy.org' , ' What about cats, do you like cats? Im a dog fan myself. ')
-
+commit;
+/
+SELECT * FROM admin_dating_app.USER_DETAIL_U;
+/
+SELECT * FROM admin_dating_app.block_r;  
+/
+SELECT * FROM admin_dating_app.CONVERSATION_C;
+/
+SELECT * FROM ADMIN_DATING_APP.gender_preference_u;
+/
+SELECT * FROM admin_dating_app.gender_u;
+/
+SELECT * FROM admin_dating_app.interested_in_relation_u;
+/
+SELECT * FROM admin_dating_app.rating_r;
+/
+SELECT * FROM admin_dating_app.relationship_type_u;
+/
+SELECT * FROM admin_dating_app.user_like_u;
+/
+SELECT * FROM admin_dating_app.user_photo_u;
+/
 
 
 
