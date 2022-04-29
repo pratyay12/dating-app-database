@@ -1,2 +1,2 @@
 # dating-app-database
-The Script is to be run in SYSADMIN to create the Users and grant them requisite access.
+The Script is to be run in USER - ADMIN_DATING_APP to create the DB Objects and GRANT ACCESS TO USERS.
