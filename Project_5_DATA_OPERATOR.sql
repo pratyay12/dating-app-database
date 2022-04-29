@@ -43,28 +43,6 @@ EXECUTE IMMEDIATE 'CREATE SEQUENCE relation_type_id_seq
 END IF;
 END;
 /
-DECLARE
-count_s number;
-begin
-select count(*) into count_s from user_sequences where sequence_name =upper('photo_id_seq'); 
-IF (count_s = 0) then
-EXECUTE IMMEDIATE 'CREATE SEQUENCE photo_id_seq
- START WITH     1
- INCREMENT BY   1
- MAXVALUE  9999999999
- NOCACHE
- NOCYCLE';
-ELSE 
-EXECUTE IMMEDIATE 'DROP SEQUENCE photo_id_seq';
-EXECUTE IMMEDIATE 'CREATE SEQUENCE photo_id_seq
- START WITH     1
- INCREMENT BY   1
- MAXVALUE  9999999999
- NOCACHE
- NOCYCLE';
-END IF;
-END;
-/
 CREATE OR REPLACE
 PROCEDURE insert_gender(gender_i IN varchar2) 
 IS
