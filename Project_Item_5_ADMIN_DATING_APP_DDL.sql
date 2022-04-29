@@ -826,7 +826,48 @@ END LOOP;
  END;
 
 END VIEW_MESSAGES_RECEIVED;
-
+/
+create or replace PROCEDURE VIEW_PHOTOS_MATCHES(email_initiator IN varchar2, password_initiator IN varchar2,email_receiver in varchar2) IS
+userid_initiator number;
+begin
+userid_initiator := get_user_id(email_initiator,password_initiator);
+declare 
+cursor eid is select a.email,a.first_name,a.last_name,p.photo_link,p.time_uploaded from 
+(select  f1.receiver_id as user2
+from user_like_u f1,user_like_u f2
+     where f1.initiator_id = f2.receiver_id 
+     AND f2.initiator_id = f1.receiver_id
+     and f1.initiator_id = userid_initiator)temp,
+     user_detail_u a,
+     user_photo_u p
+where temp.user2 = a.user_id
+and a.user_id = p.user_id;
+    v_mgr eid%ROWTYPE;  
+  BEGIN
+    OPEN EID;
+     
+  LOOP
+    -- fetch information from cursor into record
+    FETCH eid INTO v_mgr;
+   
+    EXIT WHEN eid%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('Name: ' ||v_mgr.first_name||' ' || v_mgr.last_name);
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.PUT_LINE('Email: ' ||v_mgr.email || '');
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.PUT_LINE('Photo Link: ' ||v_mgr.photo_link || '');
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.PUT_LINE('Time of photo: ' ||v_mgr.time_uploaded || '');
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;
+  END LOOP;
+  
+  if eid%ROWCOUNT=0 then
+      DBMS_OUTPUT.PUT_LINE('No match found.');
+   end if;
+  CLOSE EID;
+ END;
+END VIEW_PHOTOS_MATCHES;
 /
 create or replace PROCEDURE DELETE_USER(email_initiator IN varchar2, password_initiator IN varchar2) is
 userid_initiator number;
@@ -993,6 +1034,8 @@ grant execute on VIEW_MESSAGES_SENT TO USER_DATING_APP;
 grant execute on DELETE_USER TO USER_DATING_APP;
 
 grant execute on DELETE_PHOTO TO USER_DATING_APP;
+
+GRANT EXECUTE ON VIEW_PHOTOS_MATCHES TO USER_DATING_APP;
 /
 GRANT ALL PRIVILEGES ON GENDER_U TO DATA_OPERATOR;
 GRANT ALL PRIVILEGES ON RELATIONSHIP_TYPE_U TO DATA_OPERATOR;
