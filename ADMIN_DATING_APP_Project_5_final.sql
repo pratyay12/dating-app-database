@@ -477,9 +477,7 @@ begin
 
 userid_initiator := get_user_id(email_initiator,password_initiator);
 userid_receiver := get_user_id_wp(email_receiver);
-    if userid_initiator = userid_receiver then
-    raise_application_error(-20102, 'You cant chat with yourself');
-    else
+
     select count(*) into x from Block_r
     where (block_initiater=userid_initiator and block_receiver=userid_receiver) or (block_receiver=userid_initiator and block_initiater=userid_receiver);
     if x>0 then 
@@ -498,7 +496,6 @@ userid_receiver := get_user_id_wp(email_receiver);
         raise_application_error(-20101, 'You have not matched with each other so you cannot converse with each other');
         update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
     end if;
- end if;
 end INSERT_CONVERSATION;
 procedure INSERT_LIKE(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2) 
 is
@@ -511,15 +508,16 @@ userid_receiver := get_user_id_wp(email_receiver);
 if email_initiator = email_receiver then raise_application_error(-20101, 'You cannot like yourself, input another email-id');
 end if;
     
-    select COUNT(*) into x from user_detail_u a 
+    select COUNT(*) INTO X from user_detail_u a 
     inner join gender_preference_u b 
         on a.user_id=b.user_id
     inner join interested_in_relation_u c 
         on a.user_id=c.user_id
-    where b.GENDER_ID in (select gender_id from gender_preference_u where user_id=userid_initiator) 
-        and a.email!=email_initiator 
-        AND c.relationship_type_id in (select relationship_type_id from interested_in_relation_u where user_id=userid_initiator)
-        AND a.email=email_receiver;
+    where a.GENDER_ID in (select gender_id from gender_preference_u where user_id=userid_initiator)
+    and b.GENDER_ID in (select gender_id from user_detail_u where user_id=userid_initiator)
+    and a.email!=email_initiator 
+    AND a.email=email_receiver
+    AND c.relationship_type_id in (select relationship_type_id from interested_in_relation_u where user_id=userid_initiator);
    if x=0 then raise_application_error(-20104, 'You cannot proceed with the like');
 end if;
 
