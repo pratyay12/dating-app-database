@@ -337,73 +337,32 @@ WHEN NO_DATA_FOUND THEN
             raise_application_error(-20101, 'Please check the credentials you have entered.');
 END;
 /
-create or replace procedure insert_photo(email_initiator IN varchar2, password_initiator IN varchar2,photolink in varchar) 
+CREATE OR REPLACE PACKAGE INSERT_MODULE AS 
+-- INSERT USER
+PROCEDURE INSERT_USER_PRIMARY(gender_i IN varchar2,last_name_i IN varchar2,
+first_name_i IN varchar2,phone_number_i IN number,email_i IN varchar2,
+dob_i IN date,bio_i in varchar2,hobby_i in varchar2,
+height_i in number,city_i in varchar2,state_i in varchar2,
+iglink_i in varchar2,last_login_i in date,password_i in varchar2,passport_number_i in varchar2);
+-- INSERT RELATIONSHIP TYPE
+procedure INSERT_RELATIONSHIP_TYPE(email_value IN varchar2, password_value IN varchar2, preference IN varchar2);
+-- INSERT BLOCK
+procedure INSERT_BLOCK(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2);
+-- INSERT PHOTO
+procedure INSERT_PHOTO(email_initiator IN varchar2, password_initiator IN varchar2,photolink in varchar);
+-- INSERT CONVERSATION
+procedure insert_conversation(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2,text_message in clob);
+-- INSERT LIKE
+procedure insert_like(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2);
+-- INSERT GENDER_PREFERENCE
+procedure insert_gender_preference(email_value IN varchar2, password_value IN varchar2, preference IN varchar2);
+-- INSERT RATE
+procedure insert_rating(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2, val IN number); 
+END INSERT_MODULE; 
 
-is
-
-userid_initiator number;
-photo_id_unique number;
-photo_id_uniqueEx exception;
-photo_count number;
-begin
-userid_initiator := get_user_id(email_initiator,password_initiator);
-select count(*) into photo_count from  USER_PHOTO_U where user_id = userid_initiator;
-if photo_count < 5 THEN
-merge into USER_PHOTO_U u using sys.dual on (u.user_id = userid_initiator and u.photo_link = photolink)
-WHEN NOT MATCHED THEN INSERT(photo_id,user_id,time_uploaded,photo_link)
-VALUES(photo_id_seq.NEXTVAL,userid_initiator,sysdate,photolink);
-update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
-commit;
-else 
-dbms_output.put_line('You have already inserted 5 picture, deleting your oldest photo ');
-DELETE FROM USER_PHOTO_U WHERE user_id = userid_initiator
-and time_uploaded = (select min(time_uploaded) from USER_PHOTO_U where user_id = userid_initiator);
-merge into USER_PHOTO_U u using sys.dual on (u.user_id = userid_initiator and u.photo_link = photolink)
-WHEN NOT MATCHED THEN INSERT(photo_id,user_id,time_uploaded,photo_link)
-VALUES(photo_id_seq.NEXTVAL,userid_initiator,sysdate,photolink);
-update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
-commit;
-
-END if;
-
-END;
 /
-
-create or replace procedure insert_gender_preference(email_value IN varchar2, password_value IN varchar2, preference IN varchar2) 
-is
-userid number;
-GENDERID number;
-user_id_gender_id_uniqueEx exception;
-user_id_gender_id_unique number;
-begin
-userid := get_user_id(email_value,password_value);
-GENDERID := gender_id_name(preference);
-merge into GENDER_PREFERENCE_U u using sys.dual on (u.user_id = userid and u.gender_id = GENDERID)
-WHEN NOT MATCHED THEN INSERT(user_id,gender_id)
-VALUES(userid,GENDERID);
-update user_detail_u set last_login = sysdate where user_id = userid ;
-commit;
-end;
-/
-
-create or replace procedure insert_relationship_type(email_value IN varchar2, password_value IN varchar2, preference IN varchar2) 
-is
-userid number;
-RELATIONID number;
-user_id_relation_id_uniqueEx exception;
-user_id_relation_id_unique number;
-begin
-userid := get_user_id(email_value,password_value);
-RELATIONID := relation_id_name(preference);
-merge into INTERESTED_IN_RELATION_U u using sys.dual on (u.user_id = userid and u.relationship_type_id = RELATIONID)
-WHEN NOT MATCHED THEN INSERT(user_id,relationship_type_id)
-VALUES(userid,RELATIONID);
-update user_detail_u set last_login = sysdate where user_id = userid ;
-commit;
-END;
-/
-CREATE OR REPLACE
-PROCEDURE insert_user_primary(gender_i IN varchar2,last_name_i IN varchar2,
+CREATE OR REPLACE PACKAGE BODY INSERT_MODULE AS
+PROCEDURE INSERT_USER_PRIMARY(gender_i IN varchar2,last_name_i IN varchar2,
 first_name_i IN varchar2,phone_number_i IN number,email_i IN varchar2,
 dob_i IN date,bio_i in varchar2,hobby_i in varchar2,
 height_i in number,city_i in varchar2,state_i in varchar2,
@@ -436,70 +395,23 @@ dbms_output.put_line('Please insert atleast 1 photo,1 gender preference and 1 re
 end if;
 end if;
 COMMIT;
-END;
-/
-create or replace procedure insert_like(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2) 
+END INSERT_USER_PRIMARY;
+procedure INSERT_RELATIONSHIP_TYPE(email_value IN varchar2, password_value IN varchar2, preference IN varchar2) 
 is
-userid_initiator number;
-userid_receiver number;
-count_val number;
+userid number;
+RELATIONID number;
+user_id_relation_id_uniqueEx exception;
+user_id_relation_id_unique number;
 begin
-userid_initiator := get_user_id(email_initiator,password_initiator);
-userid_receiver := get_user_id_wp(email_receiver);
-select count(*) into count_val from user_like_u where initiator_id = userid_initiator and receiver_id =  userid_receiver;
-if email_initiator = email_receiver then raise_application_error(-20101, 'You cannot like yourself, input another email-id',False);
-update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
-elsif count_val > 0 then
-dbms_output.put_line('You cant like same person more than once');
-else
-merge into user_like_u u using sys.dual on (u.initiator_id = userid_initiator and u.receiver_id = userid_receiver)
-WHEN NOT MATCHED THEN INSERT(initiator_id,receiver_id,status)
-VALUES(userid_initiator,userid_receiver,1);
-update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
+userid := get_user_id(email_value,password_value);
+RELATIONID := relation_id_name(preference);
+merge into INTERESTED_IN_RELATION_U u using sys.dual on (u.user_id = userid and u.relationship_type_id = RELATIONID)
+WHEN NOT MATCHED THEN INSERT(user_id,relationship_type_id)
+VALUES(userid,RELATIONID);
+update user_detail_u set last_login = sysdate where user_id = userid ;
 commit;
-end if;
-end;
-/
-create or replace procedure insert_rating(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2, val IN number) 
-
-is
-
-userid_initiator number;
-userid_receiver number;
-x number;
-count_val number;
-begin
-
-userid_initiator := get_user_id(email_initiator,password_initiator);
-userid_receiver := get_user_id_wp(email_receiver);
-select count(*) into count_val from rating_r where rate_initiater = userid_initiator and rate_receiver =  userid_receiver;
-if count_val > 0 then
-dbms_output.put_line('You cant rate same person more than once');
-else
-    select count(*) into x from Block_r
-    where (block_initiater=userid_initiator and block_receiver=userid_receiver) or (block_receiver=userid_initiator and block_initiater=userid_receiver);
-    if x>0 then 
-        raise_application_error(-20102, 'User is blocked, you cannot rate them.');
-        update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
-    end if;
-    
-    select count(*) into x from user_like_u
-    where (initiator_id=userid_initiator and receiver_id=userid_receiver and status=1) or (receiver_id=userid_initiator and initiator_id=userid_receiver and status=1 );
-    if x=2 then 
-        merge into RATING_R R using sys.dual on (R.RATE_INITIATER = userid_initiator and R.RATE_RECEIVER = userid_receiver)
-        WHEN NOT MATCHED THEN INSERT(RATE_INITIATER,RATE_RECEIVER,RATE)
-        VALUES(userid_initiator,userid_receiver,val);
-        update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
-        commit;
-    else x:=0; 
-        raise_application_error(-20101, 'You have not matched with each other so you cannot rate.');
-        update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
-    end if;
-
-end if;
-end;
-/
-create or replace procedure insert_block(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2) 
+END INSERT_RELATIONSHIP_TYPE;
+procedure INSERT_BLOCK(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2) 
 
 is
 
@@ -525,9 +437,38 @@ VALUES(userid_initiator,userid_receiver);
 update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
 COMMIT;
 end if;
-end;
-/
-create or replace procedure insert_conversation(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2,text_message in clob)
+end INSERT_BLOCK;
+procedure INSERT_PHOTO(email_initiator IN varchar2, password_initiator IN varchar2,photolink in varchar) 
+
+is
+
+userid_initiator number;
+photo_id_unique number;
+photo_id_uniqueEx exception;
+photo_count number;
+begin
+userid_initiator := get_user_id(email_initiator,password_initiator);
+select count(*) into photo_count from  USER_PHOTO_U where user_id = userid_initiator;
+if photo_count < 5 THEN
+merge into USER_PHOTO_U u using sys.dual on (u.user_id = userid_initiator and u.photo_link = photolink)
+WHEN NOT MATCHED THEN INSERT(photo_id,user_id,time_uploaded,photo_link)
+VALUES(photo_id_seq.NEXTVAL,userid_initiator,sysdate,photolink);
+update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
+commit;
+else 
+dbms_output.put_line('You have already inserted 5 picture, deleting your oldest photo ');
+DELETE FROM USER_PHOTO_U WHERE user_id = userid_initiator
+and time_uploaded = (select min(time_uploaded) from USER_PHOTO_U where user_id = userid_initiator);
+merge into USER_PHOTO_U u using sys.dual on (u.user_id = userid_initiator and u.photo_link = photolink)
+WHEN NOT MATCHED THEN INSERT(photo_id,user_id,time_uploaded,photo_link)
+VALUES(photo_id_seq.NEXTVAL,userid_initiator,sysdate,photolink);
+update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
+commit;
+
+END if;
+
+END INSERT_PHOTO;
+procedure INSERT_CONVERSATION(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2,text_message in clob)
 is
 
 userid_initiator number;
@@ -537,7 +478,7 @@ begin
 
 userid_initiator := get_user_id(email_initiator,password_initiator);
 userid_receiver := get_user_id_wp(email_receiver);
-    
+
     select count(*) into x from Block_r
     where (block_initiater=userid_initiator and block_receiver=userid_receiver) or (block_receiver=userid_initiator and block_initiater=userid_receiver);
     if x>0 then 
@@ -556,7 +497,84 @@ userid_receiver := get_user_id_wp(email_receiver);
         raise_application_error(-20101, 'You have not matched with each other so you cannot converse with each other');
         update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
     end if;
-end;
+end INSERT_CONVERSATION;
+procedure INSERT_LIKE(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2) 
+is
+userid_initiator number;
+userid_receiver number;
+count_val number;
+begin
+userid_initiator := get_user_id(email_initiator,password_initiator);
+userid_receiver := get_user_id_wp(email_receiver);
+select count(*) into count_val from user_like_u where initiator_id = userid_initiator and receiver_id =  userid_receiver;
+if email_initiator = email_receiver then raise_application_error(-20101, 'You cannot like yourself, input another email-id',False);
+update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
+elsif count_val > 0 then
+dbms_output.put_line('You cant like same person more than once');
+else
+merge into user_like_u u using sys.dual on (u.initiator_id = userid_initiator and u.receiver_id = userid_receiver)
+WHEN NOT MATCHED THEN INSERT(initiator_id,receiver_id,status)
+VALUES(userid_initiator,userid_receiver,1);
+update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
+commit;
+end if;
+end INSERT_LIKE;
+procedure insert_gender_preference(email_value IN varchar2, password_value IN varchar2, preference IN varchar2) 
+is
+userid number;
+GENDERID number;
+user_id_gender_id_uniqueEx exception;
+user_id_gender_id_unique number;
+begin
+userid := get_user_id(email_value,password_value);
+GENDERID := gender_id_name(preference);
+merge into GENDER_PREFERENCE_U u using sys.dual on (u.user_id = userid and u.gender_id = GENDERID)
+WHEN NOT MATCHED THEN INSERT(user_id,gender_id)
+VALUES(userid,GENDERID);
+update user_detail_u set last_login = sysdate where user_id = userid ;
+commit;
+end insert_gender_preference;
+procedure insert_rating(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2, val IN number) 
+
+is
+
+userid_initiator number;
+userid_receiver number;
+x number;
+count_val number;
+begin
+
+userid_initiator := get_user_id(email_initiator,password_initiator);
+userid_receiver := get_user_id_wp(email_receiver);
+select count(*) into count_val from rating_r where rate_initiater = userid_initiator and rate_receiver =  userid_receiver;
+if count_val > 0 then
+dbms_output.put_line('You cant rate same person more than once');
+else
+    select count(*) into x from Block_r
+    where (block_initiater=userid_initiator and block_receiver=userid_receiver) or (block_receiver=userid_initiator and block_initiater=userid_receiver);
+    if x>0 then 
+        raise_application_error(-20102, 'User is blocked, you cannot rate them.');
+        update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
+    end if;
+
+    select count(*) into x from user_like_u
+    where (initiator_id=userid_initiator and receiver_id=userid_receiver and status=1) or (receiver_id=userid_initiator and initiator_id=userid_receiver and status=1 );
+    if x=2 then 
+        merge into RATING_R R using sys.dual on (R.RATE_INITIATER = userid_initiator and R.RATE_RECEIVER = userid_receiver)
+        WHEN NOT MATCHED THEN INSERT(RATE_INITIATER,RATE_RECEIVER,RATE)
+        VALUES(userid_initiator,userid_receiver,val);
+        update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
+        commit;
+    else x:=0; 
+        raise_application_error(-20101, 'You have not matched with each other so you cannot rate.');
+        update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
+    end if;
+
+end if;
+end insert_rating;
+
+
+END;
 /
 CREATE OR REPLACE PACKAGE update_module AS 
    -- update bio
