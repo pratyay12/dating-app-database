@@ -73,4 +73,5 @@ EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_LIKE('josephine_darakjy@darakjy.org',
 EXEC ADMIN_DATING_APP.USER_VIEW_MODULE.VIEW_OTHER_USERS('josephine_darakjy@darakjy.org','tornadof');
 
 exec admin_dating_app.insert_module.INSERT_RATING('rohansharma@gmail.com','password123','buttjames@gmail.com',10);
+exec admin_dating_app.insert_module.INSERT_RATING('josephine_darakjy@darakjy.org','tornadof','buttjames@gmail.com',7);
 
