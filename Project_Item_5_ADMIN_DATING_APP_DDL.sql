@@ -558,30 +558,42 @@ userid_receiver := get_user_id_wp(email_receiver);
     end if;
 end;
 /
-create or replace PROCEDURE UPDATE_bio(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
+CREATE OR REPLACE PACKAGE update_module AS 
+   -- update bio
+   PROCEDURE UPDATE_BIO(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2); 
+   -- update city
+   PROCEDURE UPDATE_CITY(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2);
+   -- update height
+   PROCEDURE UPDATE_HEIGHT(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2);
+   -- update hobby
+   PROCEDURE UPDATE_HOBBY(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2);
+   -- update membeship type
+   PROCEDURE UPDATE_MEMBERSHIP_TYPE(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2);
+   -- update password
+   PROCEDURE UPDATE_PASSWORD(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2);
+   -- update passport number
+   PROCEDURE UPDATE_PASSPORT_NUMBER(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2);
+   -- update state
+   PROCEDURE UPDATE_STATE(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2);
+END update_module; 
 
+/
+CREATE OR REPLACE PACKAGE BODY update_module AS
+PROCEDURE UPDATE_BIO(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
 BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set bio=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your bio has been updated');
- END;
-/
-
---update hobby
-create or replace PROCEDURE UPDATE_hobby(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
-
+ END UPDATE_bio;
+PROCEDURE UPDATE_CITY(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
 BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
-  update user_detail_u set hobby=update_this where user_id=userid_initiator;
-  dbms_output.put_line('Your hobby has been updated');
- END;
-/
--- update height
-
-create or replace PROCEDURE UPDATE_height(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2) IS
-
+  update user_detail_u set city=update_this where user_id=userid_initiator;
+  dbms_output.put_line('Your city has been updated');
+ END UPDATE_CITY;
+PROCEDURE UPDATE_HEIGHT(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2) IS
 userid_initiator number;
 BEGIN
   if (LENGTH(TRIM(TRANSLATE(update_this, ' +-.0123456789', ' ')))) is not null then
@@ -593,65 +605,44 @@ BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set height=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your height has been updated');
-  
- END;
-/
-
---update city
-create or replace PROCEDURE UPDATE_city(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
-
+ END UPDATE_HEIGHT;
+ PROCEDURE UPDATE_HOBBY(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
 BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
-  update user_detail_u set city=update_this where user_id=userid_initiator;
-  dbms_output.put_line('Your city has been updated');
- END;
-/
-
---update state
-create or replace PROCEDURE UPDATE_state(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
-
-userid_initiator number;
-BEGIN
-  userid_initiator := get_user_id(email_initiator,password_initiator);
-  update user_detail_u set state=update_this where user_id=userid_initiator;
-  dbms_output.put_line('Your state has been updated');
- END;
-/
-
---update passport_number
-create or replace PROCEDURE UPDATE_passport_number(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
-
-userid_initiator number;
-BEGIN
-  userid_initiator := get_user_id(email_initiator,password_initiator);
-  update user_detail_u set passport_number=update_this where user_id=userid_initiator;
-  dbms_output.put_line('Your passport number has been updated');
- END;
-/
-
---update membership_type
-create or replace PROCEDURE UPDATE_membership_type(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
-
+  update user_detail_u set hobby=update_this where user_id=userid_initiator;
+  dbms_output.put_line('Your hobby has been updated');
+ END UPDATE_HOBBY;
+PROCEDURE UPDATE_MEMBERSHIP_TYPE(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
 BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set membership_type=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your membership type has been updated');
   if (update_this='PREMIUM') then dbms_output.put_line('And your invoice has been sent to your email.'); end if;
- END;
-/
---update password
-create or replace PROCEDURE UPDATE_password(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
-
+ END UPDATE_MEMBERSHIP_TYPE;
+PROCEDURE UPDATE_PASSPORT_NUMBER(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
+userid_initiator number;
+BEGIN
+  userid_initiator := get_user_id(email_initiator,password_initiator);
+  update user_detail_u set passport_number=update_this where user_id=userid_initiator;
+  dbms_output.put_line('Your passport number has been updated');
+ END UPDATE_PASSPORT_NUMBER;
+PROCEDURE UPDATE_PASSWORD(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
 BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set password=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your password has been updated');
- END;
-/
-
+ END UPDATE_PASSWORD;
+PROCEDURE UPDATE_STATE(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
+userid_initiator number;
+BEGIN
+  userid_initiator := get_user_id(email_initiator,password_initiator);
+  update user_detail_u set state=update_this where user_id=userid_initiator;
+  dbms_output.put_line('Your state has been updated');
+ END UPDATE_STATE;
+END;
 create or replace TRIGGER AGE_CHECK 
 BEFORE INSERT OR UPDATE ON USER_DETAIL_U
 FOR EACH ROW
