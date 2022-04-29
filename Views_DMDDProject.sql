@@ -55,11 +55,9 @@ group by a.state;
 
 ----View_8
 CREATE VIEW CUSTOMER_RETENTION_VIEW AS
-SELECT LAST_NAME, FIRST_NAME, EMAIL,TRUNC(LAST_LOGIN) AS LAST_LOGGED_IN FROM USER_DETAIL_U WHERE LAST_LOGIN > TRUNC(SYSDATE-30)
-
-
-
+SELECT LAST_NAME, FIRST_NAME, EMAIL,TRUNC(LAST_LOGIN) AS LAST_LOGGED_IN FROM USER_DETAIL_U WHERE LAST_LOGIN > TRUNC(SYSDATE-30);
 ----View_9
+CREATE OR REPLACE VIEW USERS_AGE_REPORT_VIEW AS
 select age_group , count(*)
 from(
     select 
@@ -78,14 +76,14 @@ from(
 group by age_group
 ORDER BY age_group
 ;
-
-
-
 --View_10
-CREATE VIEW  USER_GENDER_REPORT_VIEW  AS
-select gender_id,
-count(*) over (partition by gender_id order by gender_id) as total
+CREATE OR REPLACE VIEW  USER_GENDER_REPORT_VIEW  AS
+SELECT g.gender,temp.total from
+(select gender_id,
+count(*) as total
 from user_detail_u
+GROUP BY GENDER_ID)temp,gender_u g
+where temp.gender_id = g.gender_id ;
 
 
 
