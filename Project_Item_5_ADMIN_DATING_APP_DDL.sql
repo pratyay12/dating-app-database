@@ -10,8 +10,7 @@ BEGIN
                               'PROCEDURE',
                               'FUNCTION',
                               'SEQUENCE',
-                              'SYNONYM',
-                              'PACKAGE BODY'
+                              'SYNONYM'
                              ))
    LOOP
       BEGIN
@@ -351,13 +350,13 @@ procedure INSERT_BLOCK(email_initiator IN varchar2, password_initiator IN varcha
 -- INSERT PHOTO
 procedure INSERT_PHOTO(email_initiator IN varchar2, password_initiator IN varchar2,photolink in varchar);
 -- INSERT CONVERSATION
-procedure insert_conversation(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2,text_message in clob);
+procedure INSERT_CONVERSATION(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2,text_message in clob);
 -- INSERT LIKE
-procedure insert_like(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2);
+procedure INSERT_LIKE(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2);
 -- INSERT GENDER_PREFERENCE
-procedure insert_gender_preference(email_value IN varchar2, password_value IN varchar2, preference IN varchar2);
+procedure INSERT_GENDER_PREFERENCE(email_value IN varchar2, password_value IN varchar2, preference IN varchar2);
 -- INSERT RATE
-procedure insert_rating(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2, val IN number); 
+procedure INSERT_RATING(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2, val IN number); 
 END INSERT_MODULE; 
 
 /
@@ -519,7 +518,7 @@ update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
 commit;
 end if;
 end INSERT_LIKE;
-procedure insert_gender_preference(email_value IN varchar2, password_value IN varchar2, preference IN varchar2) 
+procedure INSERT_GENDER_PREFERENCE(email_value IN varchar2, password_value IN varchar2, preference IN varchar2) 
 is
 userid number;
 GENDERID number;
@@ -533,8 +532,8 @@ WHEN NOT MATCHED THEN INSERT(user_id,gender_id)
 VALUES(userid,GENDERID);
 update user_detail_u set last_login = sysdate where user_id = userid ;
 commit;
-end insert_gender_preference;
-procedure insert_rating(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2, val IN number) 
+end INSERT_GENDER_PREFERENCE;
+procedure INSERT_RATING(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2, val IN number) 
 
 is
 
@@ -571,12 +570,13 @@ else
     end if;
 
 end if;
-end insert_rating;
+end INSERT_RATING;
 
 
 END;
 /
-CREATE OR REPLACE PACKAGE update_module AS 
+
+CREATE OR REPLACE PACKAGE UPDATE_MODULE AS 
    -- update bio
    PROCEDURE UPDATE_BIO(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2); 
    -- update city
@@ -593,17 +593,17 @@ CREATE OR REPLACE PACKAGE update_module AS
    PROCEDURE UPDATE_PASSPORT_NUMBER(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2);
    -- update state
    PROCEDURE UPDATE_STATE(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2);
-END update_module; 
+END UPDATE_MODULE; 
 
 /
-CREATE OR REPLACE PACKAGE BODY update_module AS
+CREATE OR REPLACE PACKAGE BODY UPDATE_MODULE AS
 PROCEDURE UPDATE_BIO(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
 BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set bio=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your bio has been updated');
- END UPDATE_bio;
+ END UPDATE_BIO;
 PROCEDURE UPDATE_CITY(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
 BEGIN
@@ -661,6 +661,7 @@ BEGIN
   dbms_output.put_line('Your state has been updated');
  END UPDATE_STATE;
 END;
+/
 create or replace TRIGGER AGE_CHECK 
 BEFORE INSERT OR UPDATE ON USER_DETAIL_U
 FOR EACH ROW
@@ -685,7 +686,7 @@ END USER_VIEW_MODULE;
 
 /
 CREATE OR REPLACE PACKAGE BODY USER_VIEW_MODULE AS
-procedure view_matches(email_initiator in varchar2, password_initiator in varchar2) is
+procedure VIEW_MATCHES(email_initiator in varchar2, password_initiator in varchar2) is
 userid_initiator number;
 begin
 userid_initiator := get_user_id(email_initiator,password_initiator);
@@ -731,7 +732,7 @@ where temp.user2 = a.user_id;
    end if;
   CLOSE EID;
  END;
-END view_matches;
+END VIEW_MATCHES;
 PROCEDURE VIEW_MESSAGES_RECEIVED(email_initiator IN varchar2, password_initiator IN varchar2) IS 
 userid_initiator number;
 BEGIN
@@ -1015,57 +1016,13 @@ where cte1.block_Users >=10;
 
 /
 
+GRANT EXECUTE ON INSERT_MODULE TO USER_DATING_APP;
 
+GRANT EXECUTE ON UPDATE_MODULE TO USER_DATING_APP;
 
-GRANT EXECUTE ON INSERT_PHOTO TO USER_DATING_APP;
+GRANT EXECUTE ON USER_VIEW_MODULE TO USER_DATING_APP;
 
-
-GRANT EXECUTE ON INSERT_GENDER_PREFERENCE TO USER_DATING_APP;
-
-
-GRANT EXECUTE ON INSERT_RELATIONSHIP_TYPE TO USER_DATING_APP;
-
-
-GRANT EXECUTE ON INSERT_USER_PRIMARY TO USER_DATING_APP;
-
-
-GRANT EXECUTE ON INSERT_LIKE TO USER_DATING_APP;
-
-
-GRANT EXECUTE ON INSERT_RATING TO USER_DATING_APP;
-
-
-GRANT EXECUTE ON INSERT_BLOCK TO USER_DATING_APP;
-
-GRANT EXECUTE ON INSERT_CONVERSATION TO USER_DATING_APP;
-
-GRANT EXECUTE ON UPDATE_bio TO USER_DATING_APP;
-
-GRANT EXECUTE ON UPDATE_hobby TO USER_DATING_APP;
-                 
-GRANT EXECUTE ON UPDATE_city TO USER_DATING_APP;
-
-GRANT EXECUTE ON UPDATE_height TO USER_DATING_APP;
-
-GRANT EXECUTE ON UPDATE_membership_type TO USER_DATING_APP;
-
-GRANT EXECUTE ON UPDATE_passport_number TO USER_DATING_APP;
-
-GRANT EXECUTE ON UPDATE_password TO USER_DATING_APP;
-
-GRANT EXECUTE ON UPDATE_state TO USER_DATING_APP;
-
-GRANT EXECUTE ON view_matches TO USER_DATING_APP;
-
-grant execute on VIEW_MESSAGES_RECEIVED TO USER_DATING_APP;
-
-grant execute on VIEW_MESSAGES_SENT TO USER_DATING_APP;
-
-grant execute on DELETE_USER TO USER_DATING_APP;
-
-grant execute on DELETE_PHOTO TO USER_DATING_APP;
-
-GRANT EXECUTE ON VIEW_PHOTOS_MATCHES TO USER_DATING_APP;
+grant execute on DELETE_MODULE TO USER_DATING_APP;
 /
 GRANT ALL PRIVILEGES ON GENDER_U TO DATA_OPERATOR;
 GRANT ALL PRIVILEGES ON RELATIONSHIP_TYPE_U TO DATA_OPERATOR;
