@@ -652,7 +652,22 @@ BEGIN
     END IF;
 END;
 /
-create or replace procedure view_matches(email_initiator in varchar2, password_initiator in varchar2) is
+CREATE OR REPLACE PACKAGE USER_VIEW_MODULE AS 
+   -- view matches
+   procedure VIEW_MATCHES(email_initiator in varchar2, password_initiator in varchar2);
+   -- view messages received
+   procedure VIEW_MESSAGES_RECEIVED(email_initiator IN varchar2, password_initiator IN varchar2);
+   -- view messages sent
+   PROCEDURE VIEW_MESSAGES_SENT(email_initiator IN varchar2, password_initiator IN varchar2);
+   -- view other users
+   PROCEDURE VIEW_OTHER_USERS(email_initiator IN varchar2, password_initiator IN varchar2);
+   -- view photos of matched users
+   PROCEDURE VIEW_PHOTOS_MATCHES(email_initiator IN varchar2, password_initiator IN varchar2,email_receiver in varchar2);
+END USER_VIEW_MODULE; 
+
+/
+CREATE OR REPLACE PACKAGE BODY USER_VIEW_MODULE AS
+procedure view_matches(email_initiator in varchar2, password_initiator in varchar2) is
 userid_initiator number;
 begin
 userid_initiator := get_user_id(email_initiator,password_initiator);
@@ -668,11 +683,11 @@ where temp.user2 = a.user_id;
     v_mgr eid%ROWTYPE;  
   BEGIN
     OPEN EID;
-     
+
   LOOP
     -- fetch information from cursor into record
     FETCH eid INTO v_mgr;
-   
+
     EXIT WHEN eid%NOTFOUND;
     DBMS_OUTPUT.PUT_LINE('Name: ' ||v_mgr.first_name||' ' || v_mgr.last_name);
     DBMS_OUTPUT.NEW_LINE;
@@ -692,100 +707,14 @@ where temp.user2 = a.user_id;
     DBMS_OUTPUT.NEW_LINE;
     DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;
   END LOOP;
-  
+
   if eid%ROWCOUNT=0 then
       DBMS_OUTPUT.PUT_LINE('No match found.');
    end if;
   CLOSE EID;
  END;
 END view_matches;
-/
-create or replace PROCEDURE VIEW_OTHER_USERS(email_initiator IN varchar2, password_initiator IN varchar2) IS
-
-userid_initiator number;
-BEGIN
-  userid_initiator := get_user_id(email_initiator,password_initiator);
-  declare
-    cursor eid is select distinct a.email,a.first_name,a.last_name,a.city,a.state,a.date_of_birth,a.bio,a.hobby,a.instagram_link,a.height from user_detail_u a 
-    inner join gender_preference_u b 
-        on a.user_id=b.user_id
-    inner join interested_in_relation_u c 
-        on a.user_id=c.user_id
-    where a.GENDER_ID in (select gender_id from gender_preference_u where user_id=userid_initiator)
-    and b.GENDER_ID in (select gender_id from user_detail_u where user_id=userid_initiator)
-    and a.email!=email_initiator 
-    AND c.relationship_type_id in (select relationship_type_id from interested_in_relation_u where user_id=userid_initiator);
-    v_mgr eid%ROWTYPE;
-    
-  BEGIN
-    OPEN EID;
-     
-  LOOP
-    -- fetch information from cursor into record
-    FETCH eid INTO v_mgr;
-   
-    EXIT WHEN eid%NOTFOUND;
-    DBMS_OUTPUT.PUT_LINE('Name: ' ||v_mgr.first_name||' ' || v_mgr.last_name);
-    DBMS_OUTPUT.NEW_LINE;
-    DBMS_OUTPUT.PUT_LINE('Email: ' ||v_mgr.email || '');
-    DBMS_OUTPUT.NEW_LINE;
-    DBMS_OUTPUT.PUT_LINE('Age: ' ||FLOOR(MONTHS_BETWEEN(TRUNC(SYSDATE, 'DD'), v_mgr.DATE_OF_BIRTH)/12) || '');
-    DBMS_OUTPUT.NEW_LINE;
-    DBMS_OUTPUT.PUT_LINE('Height: ' ||v_mgr.Height || '');
-    DBMS_OUTPUT.NEW_LINE;
-    DBMS_OUTPUT.PUT_LINE('Bio: ' ||v_mgr.bio || '');
-    DBMS_OUTPUT.NEW_LINE;
-    DBMS_OUTPUT.PUT_LINE('Hobby: ' ||v_mgr.email || '');
-    DBMS_OUTPUT.NEW_LINE;
-    DBMS_OUTPUT.PUT_LINE('City,State: ' ||v_mgr.city||', ' || v_mgr.state);
-    DBMS_OUTPUT.NEW_LINE;
-    DBMS_OUTPUT.PUT_LINE('Instagram Link: ' ||v_mgr.instagram_link ||'');
-    DBMS_OUTPUT.NEW_LINE;
-    DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;
-  END LOOP;
-  
-  if eid%ROWCOUNT=0 then
-      DBMS_OUTPUT.PUT_LINE('No match found.');
-   end if;
-  CLOSE EID;
- END;
-
-END VIEW_OTHER_USERS;
-/
-create or replace PROCEDURE VIEW_MESSAGES_SENT(email_initiator IN varchar2, password_initiator IN varchar2) IS 
-userid_initiator number;
-BEGIN
-  userid_initiator := get_user_id(email_initiator,password_initiator);
-DECLARE
-  cursor eid is select u.first_name as receiver_first_name,u.last_name as receiver_last_name,temp.text_message ,temp.time_stamp
-from 
-(select c.conversation_receiver as receiver,c.time_stamp,c.text_message  
-from conversation_c c
-where c.conversation_initializer = userid_initiator)temp,
-user_detail_u u
-where temp.receiver = u.user_id
-;
-   v_mgr eid%ROWTYPE;
-BEGIN
-    OPEN EID; 
-  LOOP
-    -- fetch information from cursor into record
-    FETCH eid INTO v_mgr;
-    EXIT WHEN eid%NOTFOUND;
-    DBMS_OUTPUT.PUT_LINE('Receiver Name: ' ||v_mgr.receiver_first_name||' ' || v_mgr.receiver_last_name);
-    DBMS_OUTPUT.PUT_LINE('Time:' || v_mgr.time_stamp);
-    DBMS_OUTPUT.PUT_LINE('Text Message:' ||v_mgr.text_message);
-END LOOP;
-  
-  if eid%ROWCOUNT=0 then
-      DBMS_OUTPUT.PUT_LINE('No match found.');
-   end if;
-  CLOSE EID;
- END;
-
-END VIEW_MESSAGES_SENT;
-/
-create or replace PROCEDURE VIEW_MESSAGES_RECEIVED(email_initiator IN varchar2, password_initiator IN varchar2) IS 
+PROCEDURE VIEW_MESSAGES_RECEIVED(email_initiator IN varchar2, password_initiator IN varchar2) IS 
 userid_initiator number;
 BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
@@ -809,7 +738,7 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Time:' || v_mgr.time_stamp);
     DBMS_OUTPUT.PUT_LINE('Text Message:' ||v_mgr.text_message);
 END LOOP;
-  
+
   if eid%ROWCOUNT=0 then
       DBMS_OUTPUT.PUT_LINE('No match found.');
    end if;
@@ -817,8 +746,90 @@ END LOOP;
  END;
 
 END VIEW_MESSAGES_RECEIVED;
-/
-create or replace PROCEDURE VIEW_PHOTOS_MATCHES(email_initiator IN varchar2, password_initiator IN varchar2,email_receiver in varchar2) IS
+PROCEDURE VIEW_MESSAGES_SENT(email_initiator IN varchar2, password_initiator IN varchar2) IS 
+userid_initiator number;
+BEGIN
+  userid_initiator := get_user_id(email_initiator,password_initiator);
+DECLARE
+  cursor eid is select u.first_name as receiver_first_name,u.last_name as receiver_last_name,temp.text_message ,temp.time_stamp
+from 
+(select c.conversation_receiver as receiver,c.time_stamp,c.text_message  
+from conversation_c c
+where c.conversation_initializer = userid_initiator)temp,
+user_detail_u u
+where temp.receiver = u.user_id
+;
+   v_mgr eid%ROWTYPE;
+BEGIN
+    OPEN EID; 
+  LOOP
+    -- fetch information from cursor into record
+    FETCH eid INTO v_mgr;
+    EXIT WHEN eid%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('Receiver Name: ' ||v_mgr.receiver_first_name||' ' || v_mgr.receiver_last_name);
+    DBMS_OUTPUT.PUT_LINE('Time:' || v_mgr.time_stamp);
+    DBMS_OUTPUT.PUT_LINE('Text Message:' ||v_mgr.text_message);
+END LOOP;
+
+  if eid%ROWCOUNT=0 then
+      DBMS_OUTPUT.PUT_LINE('No match found.');
+   end if;
+  CLOSE EID;
+ END;
+
+END VIEW_MESSAGES_SENT;
+PROCEDURE VIEW_OTHER_USERS(email_initiator IN varchar2, password_initiator IN varchar2) IS
+
+userid_initiator number;
+BEGIN
+  userid_initiator := get_user_id(email_initiator,password_initiator);
+  declare
+    cursor eid is select distinct a.email,a.first_name,a.last_name,a.city,a.state,a.date_of_birth,a.bio,a.hobby,a.instagram_link,a.height from user_detail_u a 
+    inner join gender_preference_u b 
+        on a.user_id=b.user_id
+    inner join interested_in_relation_u c 
+        on a.user_id=c.user_id
+    where a.GENDER_ID in (select gender_id from gender_preference_u where user_id=userid_initiator)
+    and b.GENDER_ID in (select gender_id from user_detail_u where user_id=userid_initiator)
+    and a.email!=email_initiator 
+    AND c.relationship_type_id in (select relationship_type_id from interested_in_relation_u where user_id=userid_initiator);
+    v_mgr eid%ROWTYPE;
+
+  BEGIN
+    OPEN EID;
+
+  LOOP
+    -- fetch information from cursor into record
+    FETCH eid INTO v_mgr;
+
+    EXIT WHEN eid%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE('Name: ' ||v_mgr.first_name||' ' || v_mgr.last_name);
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.PUT_LINE('Email: ' ||v_mgr.email || '');
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.PUT_LINE('Age: ' ||FLOOR(MONTHS_BETWEEN(TRUNC(SYSDATE, 'DD'), v_mgr.DATE_OF_BIRTH)/12) || '');
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.PUT_LINE('Height: ' ||v_mgr.Height || '');
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.PUT_LINE('Bio: ' ||v_mgr.bio || '');
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.PUT_LINE('Hobby: ' ||v_mgr.email || '');
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.PUT_LINE('City,State: ' ||v_mgr.city||', ' || v_mgr.state);
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.PUT_LINE('Instagram Link: ' ||v_mgr.instagram_link ||'');
+    DBMS_OUTPUT.NEW_LINE;
+    DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;
+  END LOOP;
+
+  if eid%ROWCOUNT=0 then
+      DBMS_OUTPUT.PUT_LINE('No match found.');
+   end if;
+  CLOSE EID;
+ END;
+
+END VIEW_OTHER_USERS;
+PROCEDURE VIEW_PHOTOS_MATCHES(email_initiator IN varchar2, password_initiator IN varchar2,email_receiver in varchar2) IS
 userid_initiator number;
 begin
 userid_initiator := get_user_id(email_initiator,password_initiator);
@@ -836,11 +847,11 @@ and a.user_id = p.user_id;
     v_mgr eid%ROWTYPE;  
   BEGIN
     OPEN EID;
-     
+
   LOOP
     -- fetch information from cursor into record
     FETCH eid INTO v_mgr;
-   
+
     EXIT WHEN eid%NOTFOUND;
     DBMS_OUTPUT.PUT_LINE('Name: ' ||v_mgr.first_name||' ' || v_mgr.last_name);
     DBMS_OUTPUT.NEW_LINE;
@@ -852,13 +863,14 @@ and a.user_id = p.user_id;
     DBMS_OUTPUT.NEW_LINE;
     DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;
   END LOOP;
-  
+
   if eid%ROWCOUNT=0 then
       DBMS_OUTPUT.PUT_LINE('No match found.');
    end if;
   CLOSE EID;
  END;
 END VIEW_PHOTOS_MATCHES;
+END;
 /
 create or replace PROCEDURE DELETE_USER(email_initiator IN varchar2, password_initiator IN varchar2) is
 userid_initiator number;
