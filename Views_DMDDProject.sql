@@ -27,28 +27,31 @@ where temp.rate_receiver = u.user_id;
 
 
 ----View_5
-CREATE VIEW NUMBER_OF_TOTAL_BLOCKS AS
-SELECT BLOCK_RECEIVER, COUNT(*) AS NUMBER_OF_BLOCKS FROM BLOCK_R GROUP BY BLOCK_RECEIVER;
-
+CREATE OR REPLACE VIEW NUMBER_OF_TOTAL_BLOCKS AS
+select u.user_id,u.first_name,u.last_name,u.email,temp.NUMBER_OF_BLOCKS
+from
+(SELECT BLOCK_RECEIVER, COUNT(*) AS NUMBER_OF_BLOCKS FROM BLOCK_R GROUP BY BLOCK_RECEIVER)temp,user_detail_u u
+where temp.block_receiver = u.user_id;
 
 
 ---View_6
-CREATE VIEW BLOCKED_PROFILES_PER_CITY_VIEW AS 
-select count(user_id) as block_Users, city
+CREATE or replace VIEW BLOCKED_PROFILES_PER_CITY_VIEW AS 
+with unique_blocks as(select distinct block_receiver from block_r)
+select count(b.block_receiver) as block_Users, city
 from user_detail_u a
-join Block_R b
+join unique_blocks b
 on b.block_receiver=a.user_id
-group by city
+group by a.city;
+
 
 ---View_7
-
-CREATE VIEW  BLOCKED_PROFILES_PER_STATE_VIEW AS 
-select count(user_id) as block_Users, state
+CREATE or replace VIEW BLOCKED_PROFILES_PER_STATE_VIEW AS 
+with unique_blocks as(select distinct block_receiver from block_r)
+select count(b.block_receiver) as block_Users, a.state
 from user_detail_u a
-join Block_R b
+join unique_blocks b
 on b.block_receiver=a.user_id
-group by state
-
+group by a.state;
 
 ----View_8
 CREATE VIEW CUSTOMER_RETENTION_VIEW AS
