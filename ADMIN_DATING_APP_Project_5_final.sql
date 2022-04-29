@@ -477,7 +477,9 @@ begin
 
 userid_initiator := get_user_id(email_initiator,password_initiator);
 userid_receiver := get_user_id_wp(email_receiver);
-
+    if userid_initiator = userid_receiver then
+    raise_application_error(-20102, 'You cant chat with yourself');
+    else
     select count(*) into x from Block_r
     where (block_initiater=userid_initiator and block_receiver=userid_receiver) or (block_receiver=userid_initiator and block_initiater=userid_receiver);
     if x>0 then 
@@ -496,6 +498,7 @@ userid_receiver := get_user_id_wp(email_receiver);
         raise_application_error(-20101, 'You have not matched with each other so you cannot converse with each other');
         update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
     end if;
+ end if;
 end INSERT_CONVERSATION;
 procedure INSERT_LIKE(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2) 
 is
