@@ -9,25 +9,21 @@ select u.user_id,u.first_name,u.last_name,u.email,temp.average_rating from
 (SELECT DISTINCT(RATE_RECEIVER) ,AVG(RATE) AS AVERAGE_RATING FROM RATING_R GROUP BY RATE_RECEIVER)temp,user_detail_u u
 where temp.rate_receiver = u.user_id;
 
-
 ----View_3
 
-CREATE VIEW RATING_RANKING_BY_CITY_VIEW AS 
-select user_id, city,Rate,
-DENSE_RANK() OVER (PARTITION by city  ORDER BY Rate DESC) as City_Rank
-from user_detail_u a
-join rating_r b
-on b.rate_receiver=a.user_id
+CREATE OR REPLACE VIEW RATING_RANKING_BY_CITY_VIEW AS 
+select u.user_id,u.first_name,u.last_name,u.email,temp.average_rating as AVERAGE_RATING, DENSE_RANK() OVER (PARTITION by u.city  ORDER BY temp.average_rating DESC) as City_Rank,u.city
+from
+(SELECT DISTINCT(RATE_RECEIVER) ,AVG(RATE) AS AVERAGE_RATING FROM RATING_R GROUP BY RATE_RECEIVER)temp,user_detail_u u
+where temp.rate_receiver = u.user_id;
 
 --VIEW_4
 
-CREATE VIEW RATING_RANKING_BY_STATE_VIEW  AS 
-select user_id, a.state,Rate,
-DENSE_RANK() OVER (PARTITION by a.state  ORDER BY Rate DESC) as STATE_RANK
-      
-from user_detail_u a
-join rating_r b
-on b.rate_receiver=a.user_id
+CREATE OR REPLACE VIEW RATING_RANKING_BY_STATE_VIEW AS 
+select u.user_id,u.first_name,u.last_name,u.email,temp.average_rating as AVERAGE_RATING, DENSE_RANK() OVER (PARTITION by u.state  ORDER BY temp.average_rating DESC) as State_Rank,u.state
+from
+(SELECT DISTINCT(RATE_RECEIVER) ,AVG(RATE) AS AVERAGE_RATING FROM RATING_R GROUP BY RATE_RECEIVER)temp,user_detail_u u
+where temp.rate_receiver = u.user_id;
 
 
 ----View_5
