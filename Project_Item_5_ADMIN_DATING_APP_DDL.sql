@@ -501,22 +501,29 @@ procedure INSERT_LIKE(email_initiator IN varchar2, password_initiator IN varchar
 is
 userid_initiator number;
 userid_receiver number;
-count_val number;
+x number;
 begin
 userid_initiator := get_user_id(email_initiator,password_initiator);
 userid_receiver := get_user_id_wp(email_receiver);
-select count(*) into count_val from user_like_u where initiator_id = userid_initiator and receiver_id =  userid_receiver;
-if email_initiator = email_receiver then raise_application_error(-20101, 'You cannot like yourself, input another email-id',False);
-update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
-elsif count_val > 0 then
-dbms_output.put_line('You cant like same person more than once');
-else
+if email_initiator = email_receiver then raise_application_error(-20101, 'You cannot like yourself, input another email-id');
+end if;
+    
+    select COUNT(*) into x from user_detail_u a 
+    inner join gender_preference_u b 
+        on a.user_id=b.user_id
+    inner join interested_in_relation_u c 
+        on a.user_id=c.user_id
+    where b.GENDER_ID in (select gender_id from gender_preference_u where user_id=userid_initiator) 
+        and a.email!=email_initiator 
+        AND c.relationship_type_id in (select relationship_type_id from interested_in_relation_u where user_id=userid_initiator)
+        AND a.email=email_receiver;
+   if x=0 then raise_application_error(-20104, 'You cannot proceed with the like');
+end if;
+
 merge into user_like_u u using sys.dual on (u.initiator_id = userid_initiator and u.receiver_id = userid_receiver)
 WHEN NOT MATCHED THEN INSERT(initiator_id,receiver_id,status)
 VALUES(userid_initiator,userid_receiver,1);
-update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
 commit;
-end if;
 end INSERT_LIKE;
 procedure INSERT_GENDER_PREFERENCE(email_value IN varchar2, password_value IN varchar2, preference IN varchar2) 
 is
@@ -603,6 +610,7 @@ BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set bio=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your bio has been updated');
+  commit;
  END UPDATE_BIO;
 PROCEDURE UPDATE_CITY(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
@@ -610,6 +618,7 @@ BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set city=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your city has been updated');
+  commit;
  END UPDATE_CITY;
 PROCEDURE UPDATE_HEIGHT(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2) IS
 userid_initiator number;
@@ -623,6 +632,7 @@ BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set height=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your height has been updated');
+  commit;
  END UPDATE_HEIGHT;
  PROCEDURE UPDATE_HOBBY(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
@@ -630,13 +640,19 @@ BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set hobby=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your hobby has been updated');
+  commit;
  END UPDATE_HOBBY;
 PROCEDURE UPDATE_MEMBERSHIP_TYPE(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
 BEGIN
+  IF update_this != 'FREE' and update_this != 'PREMIUM' THEN
+  dbms_output.put_line('please enter valid membership type');
+  else
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set membership_type=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your membership type has been updated');
+  commit;
+  end if;
   if (update_this='PREMIUM') then dbms_output.put_line('And your invoice has been sent to your email.'); end if;
  END UPDATE_MEMBERSHIP_TYPE;
 PROCEDURE UPDATE_PASSPORT_NUMBER(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
@@ -652,6 +668,7 @@ BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set password=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your password has been updated');
+  commit;
  END UPDATE_PASSWORD;
 PROCEDURE UPDATE_STATE(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
@@ -659,6 +676,7 @@ BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set state=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your state has been updated');
+  commit;
  END UPDATE_STATE;
 END;
 /
@@ -725,6 +743,7 @@ where temp.user2 = a.user_id;
     DBMS_OUTPUT.PUT_LINE('Instagram Link: ' ||v_mgr.instagram_link ||'');
     DBMS_OUTPUT.NEW_LINE;
     DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;DBMS_OUTPUT.NEW_LINE;
+    commit;
   END LOOP;
 
   if eid%ROWCOUNT=0 then
@@ -738,7 +757,7 @@ userid_initiator number;
 BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
 DECLARE
-  cursor eid is select u.first_name as sender_first_name,u.last_name as sender_last_name,temp.text_message ,temp.time_stamp
+  cursor eid is select u.first_name as sender_first_name,u.last_name as sender_last_name,temp.text_message ,temp.time_stamp,u.email
 from 
 (select c.conversation_initializer as sender,c.time_stamp,c.text_message  
 from conversation_c c
@@ -754,6 +773,7 @@ BEGIN
     FETCH eid INTO v_mgr;
     EXIT WHEN eid%NOTFOUND;
     DBMS_OUTPUT.PUT_LINE('Sender Name: ' ||v_mgr.sender_first_name||' ' || v_mgr.sender_last_name);
+    DBMS_OUTPUT.PUT_LINE('Email: ' ||v_mgr.email);
     DBMS_OUTPUT.PUT_LINE('Time:' || v_mgr.time_stamp);
     DBMS_OUTPUT.PUT_LINE('Text Message:' ||v_mgr.text_message);
 END LOOP;
@@ -770,7 +790,7 @@ userid_initiator number;
 BEGIN
   userid_initiator := get_user_id(email_initiator,password_initiator);
 DECLARE
-  cursor eid is select u.first_name as receiver_first_name,u.last_name as receiver_last_name,temp.text_message ,temp.time_stamp
+  cursor eid is select u.first_name as receiver_first_name,u.last_name as receiver_last_name,temp.text_message ,temp.time_stamp,u.email
 from 
 (select c.conversation_receiver as receiver,c.time_stamp,c.text_message  
 from conversation_c c
@@ -786,6 +806,7 @@ BEGIN
     FETCH eid INTO v_mgr;
     EXIT WHEN eid%NOTFOUND;
     DBMS_OUTPUT.PUT_LINE('Receiver Name: ' ||v_mgr.receiver_first_name||' ' || v_mgr.receiver_last_name);
+    DBMS_OUTPUT.PUT_LINE('Email: ' ||v_mgr.email);
     DBMS_OUTPUT.PUT_LINE('Time:' || v_mgr.time_stamp);
     DBMS_OUTPUT.PUT_LINE('Text Message:' ||v_mgr.text_message);
 END LOOP;
@@ -832,7 +853,7 @@ BEGIN
     DBMS_OUTPUT.NEW_LINE;
     DBMS_OUTPUT.PUT_LINE('Bio: ' ||v_mgr.bio || '');
     DBMS_OUTPUT.NEW_LINE;
-    DBMS_OUTPUT.PUT_LINE('Hobby: ' ||v_mgr.email || '');
+    DBMS_OUTPUT.PUT_LINE('Hobby: ' ||v_mgr.hobby || '');
     DBMS_OUTPUT.NEW_LINE;
     DBMS_OUTPUT.PUT_LINE('City,State: ' ||v_mgr.city||', ' || v_mgr.state);
     DBMS_OUTPUT.NEW_LINE;
@@ -909,6 +930,7 @@ dbms_output.put_line('Deleting photo!');
 select min(time_uploaded) into min_time from USER_PHOTO_U WHERE user_id = userid_initiator AND photo_link = photo_link_i;
 DELETE FROM USER_PHOTO_U WHERE user_id = userid_initiator AND photo_link =  photo_link_i
 AND time_uploaded = min_time;
+commit;
 END DELETE_PHOTO;
 PROCEDURE DELETE_USER(email_initiator IN varchar2, password_initiator IN varchar2) is
 userid_initiator number;
@@ -916,7 +938,9 @@ BEGIN
  userid_initiator := get_user_id(email_initiator,password_initiator);
  dbms_output.put_line('Deleting your profile from Dating App!');
  DELETE FROM user_detail_u where user_id = userid_initiator;
+commit;
 END DELETE_USER;
+
 END;
 /
 
