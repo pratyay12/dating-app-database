@@ -927,7 +927,22 @@ count(*) as total
 from user_detail_u
 GROUP BY GENDER_ID)temp,gender_u g
 where temp.gender_id = g.gender_id ;
+/
+-- View_11
+CREATE OR REPLACE VIEW FLAGGED_PROFILE_VIEW AS
+with cte1 as
+(
+select count(user_id) as block_Users, a.User_id
+from user_detail_u a
+join Block_R b
+on b.block_receiver=a.user_id
+group by User_id
+)
+select * 
+from cte1
+where cte1.block_Users >=10;
 
+/
 
 
 
@@ -993,4 +1008,5 @@ GRANT SELECT ON BLOCKED_PROFILES_PER_STATE_VIEW TO REPORTING_ANALYST;
 GRANT SELECT ON CUSTOMER_RETENTION_VIEW TO REPORTING_ANALYST;
 GRANT SELECT ON USERS_AGE_REPORT_VIEW TO REPORTING_ANALYST;
 GRANT SELECT ON USER_GENDER_REPORT_VIEW TO REPORTING_ANALYST;
+GRANT SELECT ON FLAGGED_PROFILE_VIEW TO REPORTING_ANALYST;
 /
