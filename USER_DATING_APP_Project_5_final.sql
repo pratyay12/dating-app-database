@@ -1,6 +1,6 @@
 set serveroutput on;
 -- Sign up
-EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_USER_PRIMARY('MALE','Sharma','Rohan',5046218927,'rohansharma@gmail.com','23-Jan-1989','I love HP','Cycling','165','Boston','MA','gdghsgwyuab.com',SYSDATE,'password123','234FD5TF01');
+EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_USER_PRIMARY('MALE','Sharma','Rohan',5046218927,'rohansharma@gmail.com','23-Jan-1989','I love HP','Cycling','165','Boston','MA','gdghsgwyuab.com','password123','234FD5TF01');
 EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_USER_PRIMARY('FEMALE','Butt','James',8102929388,'buttjames@gmail.com','28-Feb-1999','I am from NYC','3D printing','173','New Orleans','LA','aidygqwf.com','1980290','758FE2IJ02');												
 EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_USER_PRIMARY('TRANS','Darakjy','Josephine',8566368749,'josephine_darakjy@darakjy.org','01-Nov-1992','Hey how are you','amateur radio','167','Brighton','MI','hgdgqwkf.com','tornadof','300AS2UN03');											
 EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_USER_PRIMARY('PANGENDER','Venere','Art',9073854412,'art@venere.org','11-Dec-1994','I am from into singing','scrapbook','180','Bridgeport','NJ','qudqwfqff.com','vova87654','196DF3TH04');												
@@ -108,3 +108,17 @@ EXEC ADMIN_DATING_APP.VIEW_USER_DETAILS('buttjames@gmail.com','1980290');
 -- UPDATE STATE
 EXEC ADMIN_DATING_APP.UPDATE_MODULE.UPDATE_STATE('buttjames@gmail.com','778981','LA');
 EXEC ADMIN_DATING_APP.VIEW_USER_DETAILS('buttjames@gmail.com','778981');
+
+--DELETE RELATIONSHIP PREFERENCE
+EXEC ADMIN_DATING_APP.VIEW_PHOTOS('buttjames@gmail.com','778981');
+EXEC ADMIN_DATING_APP.DELETE_MODULE.DELETE_PHOTO('buttjames@gmail.com','778981', 'VCB5KM221OM0eeww');
+EXEC ADMIN_DATING_APP.VIEW_PHOTOS('buttjames@gmail.com','778981');
+
+--DELETE GENDER PREFERENCE
+EXEC ADMIN_DATING_APP.VIEW_GENDER_PREFERENCE('buttjames@gmail.com','778981');
+EXEC ADMIN_DATING_APP.DELETE_GENDER_PREFERENCE('buttjames@gmail.com','778981', 'MALE');
+EXEC ADMIN_DATING_APP.VIEW_GENDER_PREFERENCE('buttjames@gmail.com','778981');
+
+--DELETE USER
+EXEC ADMIN_DATING_APP.DELETE_MODULE.DELETE_USER('buttjames@gmail.com','778981');
+EXEC ADMIN_DATING_APP.DELETE_MODULE.DELETE_USER('buttjames@gmail.com','778981');

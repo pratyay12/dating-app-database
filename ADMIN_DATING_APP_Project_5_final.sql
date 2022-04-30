@@ -946,13 +946,15 @@ END DELETE_MODULE;
 CREATE OR REPLACE PACKAGE BODY DELETE_MODULE AS
 PROCEDURE DELETE_PHOTO(email_initiator IN varchar2, password_initiator IN varchar2,photo_link_i in varchar2) is
 userid_initiator number;
-min_time timestamp;
+min_time number;
 BEGIN
 userid_initiator := get_user_id(email_initiator,password_initiator);
+select count(*) into min_time from USER_PHOTO_U WHERE user_id = userid_initiator AND photo_link = photo_link_i;
+if min_time =0 then dbms_output.put_line('Please check the photo link!');
+else
+DELETE FROM USER_PHOTO_U WHERE user_id = userid_initiator AND photo_link =  photo_link_i;
 dbms_output.put_line('Deleting photo!');
-select min(time_uploaded) into min_time from USER_PHOTO_U WHERE user_id = userid_initiator AND photo_link = photo_link_i;
-DELETE FROM USER_PHOTO_U WHERE user_id = userid_initiator AND photo_link =  photo_link_i
-AND time_uploaded = min_time;
+end if;
 commit;
 END DELETE_PHOTO;
 PROCEDURE DELETE_USER(email_initiator IN varchar2, password_initiator IN varchar2) is
