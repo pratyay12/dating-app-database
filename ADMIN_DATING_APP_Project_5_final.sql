@@ -333,7 +333,7 @@ select user_id into user_id_value from user_detail_u  where email= email_value ;
 RETURN user_id_value;
 EXCEPTION
 WHEN NO_DATA_FOUND THEN
-            raise_application_error(-20101, 'Please check the credentials you have entered.');
+            raise_application_error(-20101, 'Please check the email reciever you have entered.');
 END;
 /
 CREATE OR REPLACE PACKAGE INSERT_MODULE AS 
@@ -342,7 +342,7 @@ PROCEDURE INSERT_USER_PRIMARY(gender_i IN varchar2,last_name_i IN varchar2,
 first_name_i IN varchar2,phone_number_i IN number,email_i IN varchar2,
 dob_i IN date,bio_i in varchar2,hobby_i in varchar2,
 height_i in number,city_i in varchar2,state_i in varchar2,
-iglink_i in varchar2,last_login_i in date,password_i in varchar2,passport_number_i in varchar2);
+iglink_i in varchar2,password_i in varchar2,passport_number_i in varchar2);
 -- INSERT RELATIONSHIP TYPE
 procedure INSERT_RELATIONSHIP_TYPE(email_value IN varchar2, password_value IN varchar2, preference IN varchar2);
 -- INSERT BLOCK
@@ -358,14 +358,13 @@ procedure INSERT_GENDER_PREFERENCE(email_value IN varchar2, password_value IN va
 -- INSERT RATE
 procedure INSERT_RATING(email_initiator IN varchar2, password_initiator IN varchar2, email_receiver IN varchar2, val IN number); 
 END INSERT_MODULE; 
-
 /
 CREATE OR REPLACE PACKAGE BODY INSERT_MODULE AS
 PROCEDURE INSERT_USER_PRIMARY(gender_i IN varchar2,last_name_i IN varchar2,
 first_name_i IN varchar2,phone_number_i IN number,email_i IN varchar2,
 dob_i IN date,bio_i in varchar2,hobby_i in varchar2,
 height_i in number,city_i in varchar2,state_i in varchar2,
-iglink_i in varchar2,last_login_i in date,password_i in varchar2,passport_number_i in varchar2)
+iglink_i in varchar2,password_i in varchar2,passport_number_i in varchar2)
 IS
 gender_id_val number;
 photo_count number;
@@ -384,8 +383,8 @@ if count_val > 0 or count_val2 > 0 or count_val3 > 0 or count_val4 > 0 then
 dbms_output.put_line('You have already signed up');
 else
 merge into admin_dating_app.USER_DETAIL_U u using sys.dual on (u.email = email_i OR u.PASSPORT_NUMBER = upper(passport_number_i) OR u.instagram_link = upper(iglink_i) )
-WHEN NOT MATCHED THEN INSERT(user_id,gender_id,last_name,first_name,phone_number,email,REGISTRATION_TIMESTAMP,DATE_OF_BIRTH,bio,hobby,height,city,state,INSTAGRAM_LINK,PASSWORD,last_login,PASSPORT_NUMBER,membership_type)
-VALUES(user_id_seq.NEXTVAL,gender_id_val,last_name_i,first_name_i,phone_number_i,email_i,sysdate,dob_i,bio_i,hobby_i,height_i,city_i,state_i,upper(iglink_i),password_i,last_login_i,upper(passport_number_i),'FREE');
+WHEN NOT MATCHED THEN INSERT(user_id,gender_id,last_name,first_name,phone_number,email,last_login,DATE_OF_BIRTH,bio,hobby,height,city,state,INSTAGRAM_LINK,PASSWORD,REGISTRATION_TIMESTAMP,PASSPORT_NUMBER,membership_type)
+VALUES(user_id_seq.NEXTVAL,gender_id_val,last_name_i,first_name_i,phone_number_i,email_i,sysdate,dob_i,bio_i,hobby_i,height_i,city_i,state_i,upper(iglink_i),password_i,sysdate,upper(passport_number_i),'FREE');
 commit;
 select count(*) into photo_count from  USER_PHOTO_U where user_id = get_user_id_wp(email_i);
 select count(*) into gender_pref from  GENDER_PREFERENCE_U where user_id = get_user_id_wp(email_i);
@@ -473,6 +472,7 @@ is
 userid_initiator number;
 userid_receiver number;
 x number;
+y number;
 begin
 
 userid_initiator := get_user_id(email_initiator,password_initiator);
@@ -488,8 +488,12 @@ userid_receiver := get_user_id_wp(email_receiver);
     select count(*) into x from user_like_u
     where (initiator_id=userid_initiator and receiver_id=userid_receiver and status=1) or (receiver_id=userid_initiator and initiator_id=userid_receiver and status=1 );
     if x=2 then 
+        select count(*) into y FROM CONVERSATION_C where CONVERSATION_INITIALIZER=userid_initiator and CONVERSATION_RECEIVER=userid_receiver and TIME_STAMP=sysdate;
+        if y !=0 then raise_application_error(-20102, 'You cannot send two messeges at the same time.');
+        else
         INSERT INTO CONVERSATION_C (CONVERSATION_INITIALIZER,CONVERSATION_RECEIVER,TIME_STAMP,TEXT_MESSAGE)
         VALUES(userid_initiator,userid_receiver,sysdate,text_message);
+        end if;
         update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
         commit;
     else x:=0; 
@@ -502,12 +506,15 @@ is
 userid_initiator number;
 userid_receiver number;
 x number;
+y number;
 begin
 userid_initiator := get_user_id(email_initiator,password_initiator);
 userid_receiver := get_user_id_wp(email_receiver);
 if email_initiator = email_receiver then raise_application_error(-20101, 'You cannot like yourself, input another email-id');
 end if;
-    
+select count(*) into y from user_photo_u where user_id=userid_initiator;
+if y=0 then raise_application_error(-20106, 'You cannot proceed with the like as you do not have any photo. Please upload atleat one photo.');
+end if;    
     select COUNT(*) INTO X from user_detail_u a 
     inner join gender_preference_u b 
         on a.user_id=b.user_id
@@ -602,8 +609,8 @@ CREATE OR REPLACE PACKAGE UPDATE_MODULE AS
    -- update state
    PROCEDURE UPDATE_STATE(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN VARCHAR2);
 END UPDATE_MODULE; 
-
 /
+
 CREATE OR REPLACE PACKAGE BODY UPDATE_MODULE AS
 PROCEDURE UPDATE_BIO(email_initiator IN varchar2, password_initiator IN varchar2, update_this IN varchar2) IS
 userid_initiator number;
@@ -625,11 +632,13 @@ PROCEDURE UPDATE_HEIGHT(email_initiator IN varchar2, password_initiator IN varch
 userid_initiator number;
 BEGIN
   if (LENGTH(TRIM(TRANSLATE(update_this, ' +-.0123456789', ' ')))) is not null then
-          raise_application_error(-20101, 'Height should be in numeric only.');
+          raise_application_error(-20108, 'Height should be in numeric only.');
   elsif update_this is null then 
     raise_application_error(-20101, 'Height cannot be null.');
   end if;
-  dbms_output.put_line('Your height has been updated');
+  IF LENGTH(update_this) > 3 THEN
+    raise_application_error(-20101, 'Enter appropriate height.');
+  end if;
   userid_initiator := get_user_id(email_initiator,password_initiator);
   update user_detail_u set height=update_this where user_id=userid_initiator;
   dbms_output.put_line('Your height has been updated');
@@ -681,6 +690,7 @@ BEGIN
  END UPDATE_STATE;
 END;
 /
+
 create or replace TRIGGER AGE_CHECK 
 BEFORE INSERT OR UPDATE ON USER_DETAIL_U
 FOR EACH ROW
@@ -690,6 +700,7 @@ BEGIN
     END IF;
 END;
 /
+
 CREATE OR REPLACE PACKAGE USER_VIEW_MODULE AS 
    -- view matches
    procedure VIEW_MATCHES(email_initiator in varchar2, password_initiator in varchar2);
@@ -702,8 +713,8 @@ CREATE OR REPLACE PACKAGE USER_VIEW_MODULE AS
    -- view photos of matched users
    PROCEDURE VIEW_PHOTOS_MATCHES(email_initiator IN varchar2, password_initiator IN varchar2,email_receiver in varchar2);
 END USER_VIEW_MODULE; 
-
 /
+
 CREATE OR REPLACE PACKAGE BODY USER_VIEW_MODULE AS
 procedure VIEW_MATCHES(email_initiator in varchar2, password_initiator in varchar2) is
 userid_initiator number;
@@ -872,8 +883,18 @@ BEGIN
 END VIEW_OTHER_USERS;
 PROCEDURE VIEW_PHOTOS_MATCHES(email_initiator IN varchar2, password_initiator IN varchar2,email_receiver in varchar2) IS
 userid_initiator number;
+USERID_RECEIVER number;
+x number;
 begin
 userid_initiator := get_user_id(email_initiator,password_initiator);
+USERID_RECEIVER := get_user_id_wp(email_receiver);
+
+select count(*) into x from Block_r
+    where (block_initiater=userid_initiator and block_receiver=userid_receiver) or (block_receiver=userid_initiator and block_initiater=userid_receiver);
+    if x>0 then 
+        raise_application_error(-20102, 'There is a block, you cannot view thier photos.');
+        update user_detail_u set last_login = sysdate where user_id = userid_initiator ;
+    end if;
 declare 
 cursor eid is select a.email,a.first_name,a.last_name,p.photo_link,p.time_uploaded from 
 (select  f1.receiver_id as user2
@@ -913,14 +934,15 @@ and a.user_id = p.user_id;
 END VIEW_PHOTOS_MATCHES;
 END;
 /
+
 CREATE OR REPLACE PACKAGE DELETE_MODULE AS 
 -- delete photo
 PROCEDURE DELETE_PHOTO(email_initiator IN varchar2, password_initiator IN varchar2,photo_link_i in varchar2);
 -- delete user
 PROCEDURE DELETE_USER(email_initiator IN varchar2, password_initiator IN varchar2);
 END DELETE_MODULE; 
-
 /
+
 CREATE OR REPLACE PACKAGE BODY DELETE_MODULE AS
 PROCEDURE DELETE_PHOTO(email_initiator IN varchar2, password_initiator IN varchar2,photo_link_i in varchar2) is
 userid_initiator number;
@@ -944,6 +966,7 @@ END DELETE_USER;
 
 END;
 /
+
 --delete gender pref
 create or replace 
 PROCEDURE DELETE_GENDER_PREFERENCE(email_initiator IN varchar2, password_initiator IN varchar2,preference in varchar2) is
