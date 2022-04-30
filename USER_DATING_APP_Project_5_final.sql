@@ -1,6 +1,6 @@
 set serveroutput on;
 -- Sign up
-EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_USER_PRIMARY('MALE','Sharma','Rohan',5046218927,'rohansharma@gmail.com','23-Jan-1989','I love HP','Cycling','165','Boston','MA','gdghsgwyuab.com','password123','234FD5TF01');
+EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_USER_PRIMARY('MALE','Sharma','Rohan',5046218927,'rohansharma@gmail.com','23-Jan-1989','I love HP','Cycling','165','Boston','MA','gdghsgwyuab.com',SYSDATE,'password123','234FD5TF01');
 EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_USER_PRIMARY('FEMALE','Butt','James',8102929388,'buttjames@gmail.com','28-Feb-1999','I am from NYC','3D printing','173','New Orleans','LA','aidygqwf.com','1980290','758FE2IJ02');												
 EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_USER_PRIMARY('TRANS','Darakjy','Josephine',8566368749,'josephine_darakjy@darakjy.org','01-Nov-1992','Hey how are you','amateur radio','167','Brighton','MI','hgdgqwkf.com','tornadof','300AS2UN03');											
 EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_USER_PRIMARY('PANGENDER','Venere','Art',9073854412,'art@venere.org','11-Dec-1994','I am from into singing','scrapbook','180','Bridgeport','NJ','qudqwfqff.com','vova87654','196DF3TH04');												
@@ -63,7 +63,9 @@ EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_RELATIONSHIP_TYPE('rohansharma@gmail.
 EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_RELATIONSHIP_TYPE('buttjames@gmail.com','1980290','COMMITTED');
 EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_RELATIONSHIP_TYPE('josephine_darakjy@darakjy.org','tornadof','NSA');
 EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_RELATIONSHIP_TYPE('art@venere.org','vova87654','NOT SURE');
-
+EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_RELATIONSHIP_TYPE('lpaprocki@hotmail.com','XpKvShrO','CASUAL');
+EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_RELATIONSHIP_TYPE('donette.foller@cox.net','QuieaX','CASUAL');
+EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_RELATIONSHIP_TYPE('simona@morasca.com','stava1','CASUAL');
 -- LIKES
 
 EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_LIKE('rohansharma@gmail.com','password123','buttjames@gmail.com')
@@ -73,5 +75,31 @@ EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_LIKE('josephine_darakjy@darakjy.org',
 EXEC ADMIN_DATING_APP.USER_VIEW_MODULE.VIEW_OTHER_USERS('josephine_darakjy@darakjy.org','tornadof');
 
 exec admin_dating_app.insert_module.INSERT_RATING('rohansharma@gmail.com','password123','buttjames@gmail.com',10);
-exec admin_dating_app.insert_module.INSERT_RATING('josephine_darakjy@darakjy.org','tornadof','buttjames@gmail.com',7);
+exec ADMIN_DATING_APP.INSERT_MODULE.INSERT_LIKE('lpaprocki@hotmail.com','XpKvShrO','art@venere.org');
+exec ADMIN_DATING_APP.INSERT_MODULE.INSERT_LIKE('art@venere.org','vova87654','lpaprocki@hotmail.com');
 
+EXEC ADMIN_DATING_APP.insert_module.insert_rating('lpaprocki@hotmail.com','XpKvShrO','art@venere.org',7.2);
+EXEC ADMIN_DATING_APP.insert_module.insert_rating('art@venere.org','vova87654','lpaprocki@hotmail.com',9.9);
+EXEC ADMIN_DATING_APP.VIEW_USER_DETAILS('art@venere.org','vova87654');
+
+-- UPDATE BIO
+EXEC ADMIN_DATING_APP.UPDATE_MODULE.UPDATE_BIO('buttjames@gmail.com','1980290','I love dance');
+EXEC ADMIN_DATING_APP.VIEW_USER_DETAILS('buttjames@gmail.com','1980290');
+-- UPDATE CITY
+EXEC ADMIN_DATING_APP.UPDATE_MODULE.UPDATE_CITY('buttjames@gmail.com','1980290','Milwakee');
+EXEC ADMIN_DATING_APP.VIEW_USER_DETAILS('buttjames@gmail.com','1980290');
+-- UPDATE HEIGHT
+EXEC ADMIN_DATING_APP.UPDATE_MODULE.UPDATE_HEIGHT('buttjames@gmail.com','1980290','200');
+EXEC ADMIN_DATING_APP.VIEW_USER_DETAILS('buttjames@gmail.com','1980290');
+-- UPDATE HOBBY
+EXEC ADMIN_DATING_APP.UPDATE_MODULE.UPDATE_HOBBY('buttjames@gmail.com','1980290','Dancing');
+EXEC ADMIN_DATING_APP.VIEW_USER_DETAILS('buttjames@gmail.com','1980290');
+-- UPDATE MEMBERSHIP TYPE
+EXEC ADMIN_DATING_APP.UPDATE_MODULE.UPDATE_MEMBERSHIP_TYPE('buttjames@gmail.com','1980290','PREMIUM');
+EXEC ADMIN_DATING_APP.VIEW_USER_DETAILS('buttjames@gmail.com','1980290');
+-- UPDATE PASSWORD
+EXEC ADMIN_DATING_APP.UPDATE_MODULE.UPDATE_PASSWORD('buttjames@gmail.com','1980290','778981');
+EXEC ADMIN_DATING_APP.VIEW_USER_DETAILS('buttjames@gmail.com','1980290');
+-- UPDATE STATE
+EXEC ADMIN_DATING_APP.UPDATE_MODULE.UPDATE_STATE('buttjames@gmail.com','778981','LA');
+EXEC ADMIN_DATING_APP.VIEW_USER_DETAILS('buttjames@gmail.com','778981');
