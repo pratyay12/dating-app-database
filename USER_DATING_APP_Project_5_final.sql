@@ -80,6 +80,11 @@ exec ADMIN_DATING_APP.INSERT_MODULE.INSERT_LIKE('art@venere.org','vova87654','lp
 
 EXEC ADMIN_DATING_APP.insert_module.insert_rating('lpaprocki@hotmail.com','XpKvShrO','art@venere.org',7.2);
 EXEC ADMIN_DATING_APP.insert_module.insert_rating('art@venere.org','vova87654','lpaprocki@hotmail.com',9.9);
+
+EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_CONVERSATION('lpaprocki@hotmail.com','XpKvShrO','art@venere.org','whats up');
+EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_CONVERSATION('rohansharma@gmail.com','password123','buttjames@gmail.com','Hey how are you?');
+EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_CONVERSATION('buttjames@gmail.com','1980290','rohansharma@gmail.com','I am in nyc');
+EXEC ADMIN_DATING_APP.INSERT_MODULE.INSERT_CONVERSATION('art@venere.org','vova87654','lpaprocki@hotmail.com','Nothing much, just hanging out');
 EXEC ADMIN_DATING_APP.VIEW_USER_DETAILS('art@venere.org','vova87654');
 
 -- UPDATE BIO
